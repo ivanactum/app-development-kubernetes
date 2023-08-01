@@ -7,8 +7,8 @@ jobs:
   create-aks-cluster:
     runs-on: ubuntu-latest
     steps:
-      # - name: Check out repository
-      #   uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
 
       - name: 'Az CLI login'
         uses: azure/login@v1
@@ -21,6 +21,37 @@ jobs:
         shell: pwsh
         run: |
           az aks create --resource-group ivan-test --name myAKSCluster --node-count 2 --generate-ssh-keys
+
+
+      # # Use kubelogin to configure your kubeconfig for Azure auth
+      # - name: Set up kubelogin for non-interactive login
+      #   uses: azure/use-kubelogin@v1
+      #   with:
+      #     kubelogin-version: 'v0.0.25'
+
+      - name: Set AKS context
+        id: set-context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: 'ivan-test' 
+          cluster-name: 'myAKSCluster'
+          # admin: 'false'
+          # use-kubelogin: 'true'
+
+
+      - uses: Azure/k8s-deploy@v4
+        with:
+          #  action: deploy
+           namespace: 'myapp'
+           manifests: |
+              ../../app-k8s-resources\app
+          #  images: 'contoso.azurecr.io/myapp:${{ event.run_id }}'
+
+        # - name: Setup kubectl
+      #   id: install-kubectl
+      #   uses: azure/setup-kubectl@v3
+
+      
 
 
           
