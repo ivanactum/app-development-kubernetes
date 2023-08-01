@@ -1,0 +1,32 @@
+name: Build App
+on:
+  pull_request:
+    branches: 
+      - main
+    paths:
+      - 'application/application-vote/**'
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: docker login
+        run:
+          echo "${{secrets.DOCKER_PASSWORD}}" | docker login --username ${{secrets.DOCKER_USER}} --password-stdin
+
+      - name: Build result image
+        working-directory: ./application/application-vote/result/
+        run: |
+          docker build -f ./Dockerfile -t ${{secrets.DOCKER_USER}}/application-result2:$(echo $GITHUB_SHA | head -c7) .
+      - name: Build vote image
+        working-directory: ./application/application-vote/vote/
+        run: |
+          docker build -f .//Dockerfile -t ${{secrets.DOCKER_USER}}/application-vote2:$(echo $GITHUB_SHA | head -c7) .
+      - name: Build worker image
+        working-directory: ./application/application-vote/worker/
+        run: |
+          docker build -f ./Dockerfile -t ${{secrets.DOCKER_USER}}/application-worker2:$(echo $GITHUB_SHA | head -c7) .

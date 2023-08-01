@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alb-ingress-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alb-ingress-controller
+  template:
+    metadata:
+      labels:
+        app: alb-ingress-controller
+    spec:
+      containers:
+        - name: alb-ingress-controller
+          image: docker.io/amazon/aws-alb-ingress-controller:v1.1.8
+          args:
+            - --ingress-class="alb"
+            - --cluster-name="eks-cluster-kc7-equipo5"
+            - --aws-region="us-east-2"

@@ -1,0 +1,75 @@
+name: IaC - Point DNS to ALB URL
+on:
+    workflow_dispatch:
+    workflow_run:
+      workflows: ["IaC - Create AWS EKS Cluster with Terraform"]
+      types:
+        - completed
+
+jobs:
+    update-application-dns:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetching GoDaddy CLI repo (https://github.com/cabemo/godaddy-cli)
+              uses: actions/checkout@v3
+              with:
+                repository: cabemo/godaddy-cli
+                path: godaddy-cli
+
+            - name: Checkout AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                aws-region: us-east-2
+  
+            - name: Install Godaddy's CLI
+              working-directory: godaddy-cli/
+              run: |
+                make
+                sudo make install
+
+            - name: Setup credentials for Godaddy's CLI
+              run: |
+                mkdir -pv $HOME/.config/godaddy/
+                cat <<EOF > $HOME/.config/godaddy/credentials.json
+                {
+                  "key": "${{ secrets.GODADDY_API_KEY }}",
+                  "secret": "${{ secrets.GODADDY_API_SECRET }}"
+                }
+                EOF
+
+            - name: Obtain AWS ALB URL and configure DNS
+              run: |
+                for LB in vote result grafana; do
+                  LB_DNS="$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(DNSName, '$LB')].DNSName" --output text)"
+                  if [ -n "${LB_DNS}" ]; then
+                      echo "Configuring CNAME for $LB: ${LB_DNS}"
+                      godaddy records remove --domain omai.ltd --type CNAME --name "$LB"
+                      godaddy records add --domain omai.ltd --type CNAME --name "$LB" --value "${LB_DNS}" --ttl 1800
+                  else
+                      echo "No Load Balancer URL with '$LB' found"
+                  fi
+                done
+
+            - name: Verify domains are listed
+              run: |
+                godaddy domains list
+                godaddy records list --domain omai.ltd  
+
+            - name: Wait 1 min for DNS propagation and verify DNS Record
+              run: |
+                sleep 60
+                for LB in vote result grafana; do
+                  dig "$LB".omai.ltd @8.8.8.8
+                  host "$LB".omai.ltd
+                done
+                
+            - name: Notify discord channel
+              uses: sebastianpopp/discord-action@releases/v2
+              with:
+                webhook: ${{ secrets.DISCORD_INFRA_WEBHOOK_URL }}
+                message: |
+                   **Action:** DNS successfully updated. Access "http://vote.omai.ltd" or "http://result.omai.ltd" 
+                   **Triggered by:** ${{ github.actor }}
+                   **Action URL:** [View Job](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})

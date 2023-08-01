@@ -1,0 +1,85 @@
+name: Deploy Images to Docker Hub
+on:
+  push:
+    branches: 
+      - main
+    paths:
+      - 'application/application-vote/**'
+
+jobs:
+  build-push-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: docker login
+        run:
+          echo "${{secrets.DOCKER_PASSWORD}}" | docker login --username ${{secrets.DOCKER_USER}} --password-stdin
+
+      - name: Build result image
+        working-directory: ./application/application-vote/result/
+        run: |
+          docker build -f ./Dockerfile -t ${{secrets.DOCKER_USER}}/application-result2:$(echo $GITHUB_SHA | head -c7) .
+      - name: Build vote image
+        working-directory: ./application/application-vote/vote/
+        run: |
+          docker build -f ./Dockerfile -t ${{secrets.DOCKER_USER}}/application-vote2:$(echo $GITHUB_SHA | head -c7) .
+      - name: Build worker image
+        working-directory: ./application/application-vote/worker/
+        run: |
+          docker build -f ./Dockerfile -t ${{secrets.DOCKER_USER}}/application-worker2:$(echo $GITHUB_SHA | head -c7) .
+
+      - name: Push result image
+        working-directory: ./application/application-vote/result/
+        run: |
+          docker push ${{secrets.DOCKER_USER}}/application-result2:$(echo $GITHUB_SHA | head -c7)
+      - name: Push vote image
+        working-directory: ./application/application-vote/vote/
+        run: |
+          docker push  ${{secrets.DOCKER_USER}}/application-vote2:$(echo $GITHUB_SHA | head -c7)
+      - name: Push worker image
+        working-directory: ./application/application-vote/worker/
+        run: |
+          docker push  ${{secrets.DOCKER_USER}}/application-worker2:$(echo $GITHUB_SHA | head -c7)
+
+  deploy-images:
+    runs-on: ubuntu-latest
+    needs: build-push-images
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Change k8s manifest and push changes
+        working-directory: ./app-k8s-resources/app/
+        run: |
+          sha=$(echo $GITHUB_SHA | head -c7)
+          echo $sha
+
+          text="      - image: zjivan/application-result2:$sha" awk -i inplace -v lineno="18" \
+           'NR == lineno { print ENVIRON["text"]; next }; 1' "result-deployment.yaml"
+          text="      - image: zjivan/application-vote2:$sha" awk -i inplace -v lineno="18" \
+           'NR == lineno { print ENVIRON["text"]; next }; 1' "vote-deployment.yaml"
+          text="      - image: zjivan/application-worker2:$sha" awk -i inplace -v lineno="18" \
+           'NR == lineno { print ENVIRON["text"]; next }; 1' "worker-deployment.yaml"
+
+          git config user.email "check-action@github"
+          git config user.name "check-action"
+          git add .
+          git commit -m "Update image SHA $(echo $GITHUB_SHA | head -c7)"
+          git push origin main > error 
+          cat error
+          if [[ $(cat error | grep -c "error" ) -eq 1 ]]; then
+            echo "========================================================"
+            echo "Retrying...."
+            echo "========================================================"
+            set -e
+            sleep 5
+            git pull
+            git commit -m "Update image SHA $(echo $GITHUB_SHA | head -c7)"
+            git push origin main
+          fi
+
+

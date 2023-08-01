@@ -1,0 +1,62 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gp2-immediate
+parameters:
+  fsType: ext4
+  type: gp2
+provisioner: kubernetes.io/aws-ebs
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: db
+  name: db
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: db
+ serviceName: db
+
+ template:
+   metadata:
+     labels:
+       app: db
+   spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - image: postgres:15-alpine
+        name: postgres
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-password
+              key: db-password
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-data-postgres
+          subPath: postgres
+      volumes:
+        - name: db-data-postgres
+          persistentVolumeClaim:
+            claimName: db-data-postgres
+ volumeClaimTemplates:
+ - metadata:
+     name: db-data-postgres
+   spec:
+     storageClassName: gp2-immediate
+     accessModes: [ "ReadWriteOnce" ]
+     resources:
+       requests:
+         storage: 5Gi
