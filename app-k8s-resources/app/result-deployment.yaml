@@ -15,7 +15,7 @@ spec:
         app: result
     spec:
       containers:
-      - image: zjivan/application-result2:79db0ba
+      - image: zjivan/application-result2:02dee3e
         name: result
         ports:
         - containerPort: 80
