@@ -17,11 +17,16 @@ jobs:
           
 # https://github.com/marketplace/actions/azure-cli-action
 
-      - name: 'Run az commands'
+      - name: 'Run az aks create'
         shell: pwsh
         run: |
-          az aks create --resource-group ivan-test --name myAKSCluster --node-count 2 --generate-ssh-keys
-
+            $akslist=$(az aks list -g ivan-test)
+            if (!$akslist.Equals("[]")) {
+              echo "cluster exists!"
+            } else {
+              az aks create --resource-group ivan-test --name myAKSCluster --node-count 2 --generate-ssh-keys
+            }
+            
 
       # # Use kubelogin to configure your kubeconfig for Azure auth
       # - name: Set up kubelogin for non-interactive login
@@ -44,7 +49,7 @@ jobs:
           #  action: deploy
            namespace: 'myapp'
            manifests: |
-              ../../app-k8s-resources\app
+              app-k8s-resources\app
           #  images: 'contoso.azurecr.io/myapp:${{ event.run_id }}'
 
         # - name: Setup kubectl
