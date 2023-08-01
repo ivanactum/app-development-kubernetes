@@ -7,6 +7,9 @@ jobs:
   create-aks-cluster:
     runs-on: ubuntu-latest
     steps:
+      # - name: Check out repository
+      #   uses: actions/checkout@v2
+
       - name: 'Az CLI login'
         uses: azure/login@v1
         with:
@@ -17,8 +20,7 @@ jobs:
       - name: 'Run az commands'
         shell: pwsh
         run: |
-          az group list --out table
-          #az aks create --resource-group ivan-test --name myAKSCluster --node-count 2 --generate-ssh-keys
+          az aks create --resource-group ivan-test --name myAKSCluster --node-count 2 --generate-ssh-keys
 
 
           
