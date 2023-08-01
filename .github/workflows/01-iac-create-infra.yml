@@ -43,18 +43,25 @@ jobs:
           # admin: 'false'
           # use-kubelogin: 'true'
 
+      - name: Setup kubectl
+        id: install-kubectl
+        uses: azure/setup-kubectl@v3
 
-      - uses: Azure/k8s-deploy@v4
-        with:
-          #  action: deploy
-           namespace: 'myapp'
-           manifests: |
-              app-k8s-resources\app
-          #  images: 'contoso.azurecr.io/myapp:${{ event.run_id }}'
 
-        # - name: Setup kubectl
-      #   id: install-kubectl
-      #   uses: azure/setup-kubectl@v3
+      - name: 'kubectl apply'
+        shell: pwsh
+        working-directory: ./app-k8s-resources/app/
+        run: |
+            kubectl apply -f ./
+
+      # - uses: Azure/k8s-deploy@v4
+      #   with:
+      #     #  action: deploy
+      #      namespace: 'myapp'
+      #      manifests: |
+      #         app-k8s-resources\app
+      #     #  images: 'contoso.azurecr.io/myapp:${{ event.run_id }}'
+
 
       
 
