@@ -45,20 +45,20 @@ spec:
         ports:
         - containerPort: 5432
           name: postgres
-        volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          name: db-data-postgres
-          subPath: postgres
-      volumes:
-        - name: db-data-postgres
-          persistentVolumeClaim:
-            claimName: db-data-postgres
- volumeClaimTemplates:
- - metadata:
-     name: db-data-postgres
-   spec:
-     storageClassName: managed-csi
-     accessModes: [ "ReadWriteOnce" ]
-     resources:
-       requests:
-         storage: 5Gi
+#         volumeMounts:
+#         - mountPath: /var/lib/postgresql/data
+#           name: db-data-postgres
+#           subPath: postgres
+#       volumes:
+#         - name: db-data-postgres
+#           persistentVolumeClaim:
+#             claimName: db-data-postgres
+#  volumeClaimTemplates:
+#  - metadata:
+#      name: db-data-postgres
+#    spec:
+#      storageClassName: managed-csi
+#      accessModes: [ "ReadWriteOnce" ]
+#      resources:
+#        requests:
+#          storage: 5Gi
