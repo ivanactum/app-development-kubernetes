@@ -54,6 +54,13 @@ jobs:
             kubectl create namespace argocd
             kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+      - name: 'Adding apps to argoCD'
+        shell: pwsh
+        working-directory: ./app-k8s-resources/argocd/
+        run: |
+            kubectl create namespace dev
+            kubectl apply -n dev -f ./application.yaml
+
 
       
 
