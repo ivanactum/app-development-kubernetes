@@ -35,6 +35,8 @@ spec:
         env:
         - name: POSTGRES_USER
           value: postgres
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -55,7 +57,7 @@ spec:
  - metadata:
      name: db-data-postgres
    spec:
-     storageClassName: azurefile
+     storageClassName: managed-csi
      accessModes: [ "ReadWriteOnce" ]
      resources:
        requests:
