@@ -58,7 +58,9 @@ jobs:
         shell: pwsh
         working-directory: ./app-k8s-resources/argocd/
         run: |
-            kubectl create namespace dev
+            pwd
+            ls
+            # kubectl create namespace dev
             kubectl apply -n dev -f ./application.yaml
 
 
