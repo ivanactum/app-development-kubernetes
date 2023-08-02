@@ -55,7 +55,7 @@ spec:
  - metadata:
      name: db-data-postgres
    spec:
-     storageClassName: gp2-immediate
+     storageClassName: azurefile
      accessModes: [ "ReadWriteOnce" ]
      resources:
        requests:
