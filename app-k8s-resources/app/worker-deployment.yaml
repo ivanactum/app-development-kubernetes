@@ -15,7 +15,7 @@ spec:
         app: worker
     spec:
       containers:
-      - image: zjivan/application-worker2:02dee3e
+      - image: zjivan/application-worker2:8754c49
         name: worker
         resources:
           requests:
