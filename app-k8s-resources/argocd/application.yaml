@@ -12,3 +12,6 @@ spec:
     server: 'https://kubernetes.default.svc'
     namespace: dev
   project: default
+  syncPolicy:
+    automated:
+      prune: true
