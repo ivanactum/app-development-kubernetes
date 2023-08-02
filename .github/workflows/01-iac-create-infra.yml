@@ -2,7 +2,12 @@ name: IaC - Create AKS Cluster - Azure
 
 on:
   workflow_dispatch:
-    
+  # push:
+  #   branches: 
+  #     - main
+  #   paths:
+  #     - 'app-k8s-resources/app/**'
+     
 jobs:
   create-aks-cluster:
     runs-on: ubuntu-latest
@@ -14,8 +19,6 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
-# https://github.com/marketplace/actions/azure-cli-action
 
       - name: 'Run az aks create'
         shell: pwsh
@@ -27,40 +30,29 @@ jobs:
               az aks create --resource-group ivan-test --name myAKSCluster --node-count 2 --generate-ssh-keys
             }
             
-
-      # # Use kubelogin to configure your kubeconfig for Azure auth
-      # - name: Set up kubelogin for non-interactive login
-      #   uses: azure/use-kubelogin@v1
-      #   with:
-      #     kubelogin-version: 'v0.0.25'
-
       - name: Set AKS context
         id: set-context
         uses: azure/aks-set-context@v3
         with:
           resource-group: 'ivan-test' 
           cluster-name: 'myAKSCluster'
-          # admin: 'false'
-          # use-kubelogin: 'true'
 
       - name: Setup kubectl
         id: install-kubectl
         uses: azure/setup-kubectl@v3
 
 
-      - name: 'kubectl apply'
+      # - name: 'kubectl apply'
+      #   shell: pwsh
+      #   working-directory: ./app-k8s-resources/app/
+      #   run: |
+      #       kubectl apply -f ./
+      
+      - name: 'Install ArgoCD'
         shell: pwsh
-        working-directory: ./app-k8s-resources/app/
         run: |
-            kubectl apply -f ./
-
-      # - uses: Azure/k8s-deploy@v4
-      #   with:
-      #     #  action: deploy
-      #      namespace: 'myapp'
-      #      manifests: |
-      #         app-k8s-resources\app
-      #     #  images: 'contoso.azurecr.io/myapp:${{ event.run_id }}'
+            kubectl create namespace argocd
+            kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 
       
