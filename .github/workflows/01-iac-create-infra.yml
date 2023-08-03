@@ -2,11 +2,6 @@ name: IaC - Create AKS Cluster - Azure
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: 
-  #     - main
-  #   paths:
-  #     - 'app-k8s-resources/app/**'
      
 jobs:
   create-aks-cluster:
