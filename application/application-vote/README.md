@@ -18,17 +18,6 @@ To stop it
 ```shell
 docker compose down
 ```
-
-## Load data with container
-This will add votes to the application, in to .\application\application-vote directory.
-```shell
-docker build -t performance-test .
-docker run performance-test
-```
-
-## Run the app in EKS AWS
-
-Go to read terraform instruction to create the cluster [terraform/README.md](/terraform/README.md).
  
 ## Architecture diagram
 
