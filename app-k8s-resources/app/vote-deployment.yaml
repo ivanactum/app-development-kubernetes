@@ -15,7 +15,7 @@ spec:
         app: vote
     spec:
       containers:
-      - image: zjivan/application-vote2:ce4abaa
+      - image: zjivan/application-vote2:727eb1f
         name: vote
         ports:
         - containerPort: 80
