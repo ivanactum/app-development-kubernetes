@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'application/application-vote/**'
+  workflow_dispatch:
 
 jobs:
   build-images:
