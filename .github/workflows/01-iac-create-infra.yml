@@ -10,10 +10,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # - name: 'Az CLI login'
-      #   uses: azure/login@v1
-      #   with:
-      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
@@ -42,11 +38,11 @@ jobs:
         uses: azure/setup-kubectl@v3
 
 
-      # - name: 'kubectl apply'
-      #   shell: pwsh
-      #   working-directory: ./app-k8s-resources/app/
-      #   run: |
-      #       kubectl apply -f ./
+      - name: 'kubectl apply'
+        shell: pwsh
+        working-directory: ./app-k8s-resources/app/
+        run: |
+            kubectl apply -f ./
       
       - name: 'Install ArgoCD'
         shell: pwsh
